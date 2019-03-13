@@ -17,9 +17,9 @@ Pada suatu hari Kusuma dicampakkan oleh Elen karena Elen dimenangkan oleh orang 
 
 ## 3. soal3
 Diberikan file campur2.zip. Di dalam file tersebut terdapat folder “campur2”. 
-Buatlah program C yang dapat:
-	i)  mengekstrak file zip tersebut.<br>
-	ii) menyimpan daftar file dari folder “campur2” yang memiliki ekstensi .txt ke dalam file daftar.txt.<br> 
+Buatlah program C yang dapat:  
+	i)  mengekstrak file zip tersebut.  
+	ii) menyimpan daftar file dari folder “campur2” yang memiliki ekstensi .txt ke dalam file daftar.txt.
 #### Catatan:
 - Gunakan fork dan exec.
 - Gunakan minimal 3 proses yang diakhiri dengan exec.
