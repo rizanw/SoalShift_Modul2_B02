@@ -22,7 +22,149 @@ Pada suatu hari Kusuma dicampakkan oleh Elen karena Elen dimenangkan oleh orang 
 $ mkdir ~/hatiku
 $ touch ~/hatiku/elen.ku
 ```
-2. ss
+dan lalu buat `owner` dan `group` menjadi `www-data`. Dengan cara :
+```sh
+$ sudo chown www-data:www-data ~/hatiku/elen.ku
+```
+dan beri permission menjadi readable, writeable, dan executable. Dengan cara :
+```sh
+$ sudo chmod 777 ~/hatiku/elen.ku
+```
+2. Buat file `.c`, inisiasi variable untuk menampung alamat file elen.ku.
+```c
+...
+int main(){
+	char elenku[100];
+	char *uname;
+	uname = getlogin();
+	sprintf(elenku, "/home/%s/hatiku/elen.ku", uname);
+	...
+}
+```
+untuk membuat `username` dalam folder `home` lebih dinamik, maka dapat memanfaatkan fungsi `getlogin()`. Dan untuk menginisiai alamat elen.ku dapat menggunakan `sprintf` lalu ditampung di variable `elenku` yang sudah dibuat.
+3. Karena program yang diminta harus berjalan setiap detik, maka dapat menggunakan `while(1)` untuk melakukan `looping` dengan bantuan fungsi `sleep(3)` untuk men-delay program selama tiga detik.
+```c
+...
+int main(){
+	...
+	while(1){
+		...
+		sleep(3);
+	}
+}
+```
+4. Untuk memeriksa status file dapat menggunakan `stat` dalam [libray](http://pubs.opengroup.org/onlinepubs/7908799/xsh/sysstat.h.html) `sys/stat.h`
+```c
+...
+int main(){
+	...
+	while(1){
+		...
+		struct stat kenangan;
+		stat(elenku, &kenangan);
+		...
+	}
+	...
+}
+```
+dengan library ini kita dapat mendapatkan `user id` serta `group id` dari file `elenku`.
+5. Selanjutnya kita perlu memeriksa apakah file tersebut benar dimiliki (`owner`) dan dalam `group`nya `www-data` dengan bantuan [library](http://pubs.opengroup.org/onlinepubs/009696699/basedefs/pwd.h.html) `pwd.h` dan [libray](http://pubs.opengroup.org/onlinepubs/007904975/basedefs/grp.h.html) `grp.h`.
+```c
+...
+int main(){
+	...
+	while(1){
+		...
+		struct passwd *euid = getpwid(kenangan.st_uid);
+		struct passwd *egid = getgrid(kenangan.st_gid);
+		...
+	}
+	...
+}
+```
+6. Lalu dapat diperiksa dengan `if statement ` apakah nama own dan group file elen.ku sama dengan `www-data`.
+```c
+...
+int main(){
+	...
+	while(1){
+		...
+		struct passwd *euid = getpwid(kenangan.st_uid);
+		struct passwd *egid = getgrid(kenangan.st_gid);
+		if(strcmp(euid->pw_name, "www-data")==0 && strcmp(egid->gr_name, "www-data")==0){
+  		remove(elenku);
+		}
+		...
+	}
+	...
+}
+```
+7. Maka keseluruan program yang kita buat ialah :
+```c
+...
+int main() {
+	char elenku[100];
+	char *uname;
+	uname = getlogin();
+	sprintf(elenku, "/home/%s/modul2/hatiku/elen.ku", uname);
+
+	while(1) {
+	  struct stat kenangan;
+		stat(elenku, &kenangan);
+		struct passwd *euid = getpwuid(kenangan.st_uid);
+		struct group *egid = getgrgid(kenangan.st_gid);
+
+		if(strcmp(euid->pw_name, "www-data")==0 && strcmp(egid->gr_name, "www-data")==0){
+			remove(elenku);
+		}
+		sleep(3);
+	}
+}
+```
+Jika `onwer` dan `group` file elen.ku sama dengan `www-data` maka file tersebut dapat langsung saja di hapus.
+8. Untuk menjalankan program dalam `background` maka dapat didapat ditambahkan fungsi daemon.  
+```c
+	...
+	void crDaemon();
+	int main() {
+	...
+	crDaemon();
+
+	while(1) {
+	 ...
+	}
+	exit(EXIT_SUCCESS);
+	}
+
+	void crDaemon(){
+		pid_t pid, sid;
+		pid = fork();
+
+		if (pid < 0) {
+			exit(EXIT_FAILURE);
+	  }
+
+		if (pid > 0) {
+			exit(EXIT_SUCCESS);
+	  }
+
+		umask(0);
+
+		sid = setsid();
+
+		if (sid < 0) {
+	    exit(EXIT_FAILURE);
+	  }
+
+		if ((chdir("/")) < 0) {
+	    exit(EXIT_FAILURE);
+	  }
+
+	  close(STDIN_FILENO);
+	  close(STDOUT_FILENO);
+	  close(STDERR_FILENO);
+	}
+```
 
 ## 3. soal3
 Diberikan file campur2.zip. Di dalam file tersebut terdapat folder “campur2”.
