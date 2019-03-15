@@ -178,11 +178,75 @@ Buatlah program C yang dapat:
 - Pastikan file daftar.txt dapat diakses dari text editor
 #### Jawaban:
 #### Penjelasan:
-1. Mendeklarasikan Pipe dengan cara :
-2. Pipe pertama diisi dengan proses untuk me-unzip file `Campur2` dengan menggunakan command `unzip`
+1. Mendeklarasikan dengan cara :
+	```c
+	...
+	int main() {
+	pid_t pid1,pid2,pid3,pid4;
+	int pipefd[4];
+	int status;
+	
+	pipe(pipefd);
+	
+	pid1 = fork();
+	...
+	```	
+2. Proses untuk me-unzip file `Campur2` dengan menggunakan command `unzip`
+	```c
+	...
+	char *argv[3] = {"unzip", "/home/sherly/modul2/campur2.zip", NULL};
+		execv("/usr/bin/unzip", argv);
+	...
+	```	
 3. Dengan menggunakan bantuan `dir` me-list file mana saja yang mempunyai format .txt
-4. Pipe kedua digunakan untuk membuat file baru bernama `daftar.txt` dengan bantuan `touch`
+	```c
+	...
+	while ((wait(&status))>0);
+	DIR *d;
+    	struct dirent *dir;
+    	d = opendir("/home/sherly/modul2/campur2");
+    	if (d)
+    	{
+	        while ((dir = readdir(d)) != NULL)
+        	{
+		    int len = strlen(dir->d_name);
+		    if(dir->d_name[len-4] =='.' && dir->d_name[len-3] =='t' && dir->d_name[len-2] =='x'&& dir->d_name[len-1] 				=='t')
+	            printf("%s\n", dir->d_name);
+			
+	        }
+	closedir(d);
+	...
+	```
+4. Membuat file baru bernama `daftar.txt` dengan bantuan `touch`
+	```c
+	...
+	execlp("touch", "touch", "daftar.txt", NULL);
+	...
+	```
+5. Me-list file .txt dan dimasukkan ke child ke empat untuk memasukkan ke `daftar.txt` menggunakan erintah `freopen`
+	```c
+	...
+	if(pid3 == 0)
+    	{
+        char *argv[3] = {"ls", "campur2", NULL};
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[0]);
+        execv("/bin/ls", argv);
+    	}
+    	while((wait(&status)) > 0);
+    	pid4 = fork();
+    	if(pid4 == 0)
+    	{
+        char *argv[3] = {"grep", ".txt$", NULL};
+        dup2(pipefd[0], STDIN_FILENO);
+        close(pipefd[1]);
 
+       freopen("daftar.txt", "w", stdout);
+        execv("/bin/grep", argv);
+	}
+	...
+	```
+	
 ## 4. soal4
 Dalam direktori `/home/[user]/Documents/makanan` terdapat file `makan_enak.txt` yang berisikan daftar makanan terkenal di Surabaya. Elen sedang melakukan diet dan seringkali tergiur untuk membaca isi `makan_enak.txt` karena ngidam makanan enak. Sebagai teman yang baik, Anda membantu Elen dengan membuat program C yang berjalan setiap 5 detik untuk memeriksa apakah file `makan_enak.txt` pernah dibuka setidaknya 30 detik yang lalu `(rentang 0 - 30 detik)`.
 
