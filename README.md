@@ -10,6 +10,45 @@
 ## 1. soal1
 Elen mempunyai pekerjaan pada studio sebagai fotografer. Suatu hari ada seorang klien yang bernama Kusuma yang meminta untuk mengubah nama file yang memiliki ekstensi .png menjadi '“[namafile]_grey.png”'. Karena jumlah file yang diberikan Kusuma tidak manusiawi, maka Elen meminta bantuan kalian untuk membuat suatu program C yang dapat mengubah nama secara otomatis dan diletakkan pada direktori `/home/[user]/modul2/gambar`.
 ##### Catatan : Tidak boleh menggunakan crontab.
+#### Jawaban :
+#### Penjelasan :
+1. Menyimpan direktori lalu disimpan pada file dalam bentuk struct
+	```c
+	...
+	struct dirent *de;
+	...
+	```
+2. Membuka direktori file lalu mengecek isi didalamnya
+	```c
+	...
+	DIR *dr = opendir(".");
+	...
+	```
+3. Mengecek .png lalu di `rename`
+	```c
+	...
+	char a = file[i][len -1];
+	char b = file[i][len -2];
+	char c = file[i][len -3];
+	char d = file[i][len -4];
+	for(int j =0; j<len - 4; j++){
+		nama[j] = file[i][j];
+	}
+	strcat(nama, "_grey.png");
+	i++;
+	
+	if(a=='g' && b=='n' && c=='p' && d=='.'){
+		int nilai = rename(de->d_name, nama);
+	...
+	```
+4. Men-copy file yang telah di `rename` ke dalam file `modul2/gambar`
+	```c
+	...
+	char *argv[4] = {"cp", nama, "/home/sherly/modul2/gambar", NULL};
+		execv("/bin/cp", argv);
+	...
+	```
+5. Memberikan daemon
 
 ## 2. soal2
 Pada suatu hari Kusuma dicampakkan oleh Elen karena Elen dimenangkan oleh orang lain. Semua kenangan tentang Elen berada pada file bernama “elen.ku” pada direktori “hatiku”. Karena sedih berkepanjangan, tugas kalian sebagai teman Kusuma adalah membantunya untuk menghapus semua kenangan tentang Elen dengan membuat program C yang bisa mendeteksi owner dan group dan menghapus file “elen.ku” setiap 3 detik dengan syarat ketika owner dan grupnya menjadi “www-data”. Ternyata kamu memiliki kendala karena permission pada file “elen.ku”. Jadi, ubahlah permissionnya menjadi 777. Setelah kenangan tentang Elen terhapus, maka Kusuma bisa move on.
