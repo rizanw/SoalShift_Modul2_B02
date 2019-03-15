@@ -49,7 +49,33 @@ Elen mempunyai pekerjaan pada studio sebagai fotografer. Suatu hari ada seorang 
 	...
 	```
 5. Memberikan daemon
+	```c
+	...
+	if (pid < 0) {
+    	exit(EXIT_FAILURE);
+ 	 }
 
+  	if (pid > 0) {
+    	exit(EXIT_SUCCESS);
+  	}
+
+ 	umask(0);
+
+  	sid = setsid();
+
+  	if (sid < 0) {
+    	exit(EXIT_FAILURE);
+  	}
+
+  	if ((chdir("/")) < 0) {
+    	exit(EXIT_FAILURE);
+  	}
+
+ 	close(STDIN_FILENO);
+  	close(STDOUT_FILENO);
+  	close(STDERR_FILENO);
+	...
+	```
 ## 2. soal2
 Pada suatu hari Kusuma dicampakkan oleh Elen karena Elen dimenangkan oleh orang lain. Semua kenangan tentang Elen berada pada file bernama “elen.ku” pada direktori “hatiku”. Karena sedih berkepanjangan, tugas kalian sebagai teman Kusuma adalah membantunya untuk menghapus semua kenangan tentang Elen dengan membuat program C yang bisa mendeteksi owner dan group dan menghapus file “elen.ku” setiap 3 detik dengan syarat ketika owner dan grupnya menjadi “www-data”. Ternyata kamu memiliki kendala karena permission pada file “elen.ku”. Jadi, ubahlah permissionnya menjadi 777. Setelah kenangan tentang Elen terhapus, maka Kusuma bisa move on.
 ##### Catatan: Tidak boleh menggunakan crontab
