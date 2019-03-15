@@ -44,22 +44,14 @@ int main() {
         char *argv[] = {"cp", file, newfile, NULL};
         execv("/bin/cp", argv);
       } while ((wait(&status)) > 0); kill(child, SIGKILL);
-      printf("%d\n", ct);
       ct++;
     }
-
-    // struct tm *tm_struct = localtime(time(NULL));
-    //
-    // int hour = tm_struct->tm_hour;
-    //
-    // printf("%d\n", hour);
-    // printf("%s\n", ctime(filestat.st_atime.));
   }
 
   exit(EXIT_SUCCESS);
 }
 
-void crDaemon(){ //fungsi untuk membuat daemon; cara cek "$ ps -e | grep [nama_program]"
+void crDaemon(){
   pid_t pid, sid;
 
   pid = fork();

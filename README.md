@@ -123,48 +123,48 @@ int main() {
 ```
 Jika `onwer` dan `group` file elen.ku sama dengan `www-data` maka file tersebut dapat langsung saja di hapus.
 8. Untuk menjalankan program dalam `background` maka dapat didapat ditambahkan fungsi daemon.  
-```c
-	...
-	void crDaemon();
-	int main() {
-	...
-	crDaemon();
+	```c
+		...
+		void crDaemon();
+		int main() {
+		...
+		crDaemon();
 
-	while(1) {
-	 ...
-	}
-	exit(EXIT_SUCCESS);
-	}
+		while(1) {
+		 ...
+		}
+		exit(EXIT_SUCCESS);
+		}
 
-	void crDaemon(){
-		pid_t pid, sid;
-		pid = fork();
+		void crDaemon(){
+			pid_t pid, sid;
+			pid = fork();
 
-		if (pid < 0) {
-			exit(EXIT_FAILURE);
-	  }
+			if (pid < 0) {
+				exit(EXIT_FAILURE);
+		  }
 
-		if (pid > 0) {
-			exit(EXIT_SUCCESS);
-	  }
+			if (pid > 0) {
+				exit(EXIT_SUCCESS);
+		  }
 
-		umask(0);
+			umask(0);
 
-		sid = setsid();
+			sid = setsid();
 
-		if (sid < 0) {
-	    exit(EXIT_FAILURE);
-	  }
+			if (sid < 0) {
+		    exit(EXIT_FAILURE);
+		  }
 
-		if ((chdir("/")) < 0) {
-	    exit(EXIT_FAILURE);
-	  }
+			if ((chdir("/")) < 0) {
+		    exit(EXIT_FAILURE);
+		  }
 
-	  close(STDIN_FILENO);
-	  close(STDOUT_FILENO);
-	  close(STDERR_FILENO);
-	}
-```
+		  close(STDIN_FILENO);
+		  close(STDOUT_FILENO);
+		  close(STDERR_FILENO);
+		}
+	```
 
 ## 3. soal3
 Diberikan file campur2.zip. Di dalam file tersebut terdapat folder “campur2”.
@@ -181,13 +181,146 @@ Buatlah program C yang dapat:
 Dalam direktori `/home/[user]/Documents/makanan` terdapat file `makan_enak.txt` yang berisikan daftar makanan terkenal di Surabaya. Elen sedang melakukan diet dan seringkali tergiur untuk membaca isi `makan_enak.txt` karena ngidam makanan enak. Sebagai teman yang baik, Anda membantu Elen dengan membuat program C yang berjalan setiap 5 detik untuk memeriksa apakah file `makan_enak.txt` pernah dibuka setidaknya 30 detik yang lalu `(rentang 0 - 30 detik)`.
 
 Jika file itu pernah dibuka, program Anda akan membuat 1 file `makan_sehat#.txt` di direktori `/home/[user]/Documents/makanan` dengan `'#'` berisi bilangan bulat dari 1 sampai tak hingga untuk mengingatkan Elen agar berdiet.
-#### Contoh:
+###### Contoh:
 File `makan_enak.txt` terakhir dibuka pada detik ke-1  
 Pada detik ke-10 terdapat file `makan_sehat1.txt` dan `makan_sehat2.txt`
-#### Catatan:
+###### Catatan:
 dilarang menggunakan crontab  
 Contoh nama file : makan_sehat1.txt, makan_sehat2.txt, dst
+#### Jawaban :
+> [Full SourceCode](../master/soal4.c)
+#### Penjelasan :
+1. Lakukan inisiasi direktori, dengan cara :
+	```c
+	...
+	int main(){
+		char dir[55];
+		char *uname;
+		uname = getlogin();
+		sprintf(dir, "/home/%s/Documents/makanan", uname);
+		...
+	}
+	```
+	Buat variable untuk menampung alamat direktori. Manfaatkan fungsi `getlogin()` untuk mendapatkan `username`. Inisiai alamat ke dalam variable `dir` menggunakan fungsi `sprintf`.
+2. Inisiai file `makan_enak.txt` dengan bantuan `dir` yang sudah dibuat.
+	```c
+	...
+	int main(){
+		...
+		char file[100];
+		sprintf(file, "%s/makan_enak.txt", dir);
+	}
+	```  
 
+3. Mulai buat program utamanya ke dalam `while(1)` dan dengan fungsi `sleep(5)`, karena program akan terus berjalan dan hanya berjeda dalam 5 detik.
+	```c
+	...
+	int main(){
+		...
+		while(1){
+			sleep(5);
+			...
+		}
+	}
+	```
+4. Periksa kapan terakhir kali file `makan_enak.txt` diakses, Manfaatkan fungsi `stat()` pada [library](pubs.opengroup.org/onlinepubs/7908799/xsh/sysstat.h.html) `sys/stat.h` dan [library](http://pubs.opengroup.org/onlinepubs/7908799/xsh/time.h.html) `time.h`
+	```c
+	...
+	int main(){
+		...
+		while(1){
+			sleep(5);
+			struct stat filestat;
+			stat(file, &filestat);
+
+			time_t fileAccessed = filestat.st_atime;
+			...
+		}
+	}
+	```
+	setelah status file `makan_enak.txt` diambil, cukup ambil kapan file tersebut dengan `st_atime` lalu simpan dalam variable fileAccessed dengan tipe data `time_t`.
+5. Mulai periska jika perbandingan selisih waktu terakhir kali diakses dengan waktu saat ini kurang dari sama dengan 30detik, maka buat file `makan_sehat#.txt` dengan  `#` berisi bilangan bulat.
+	```c
+	...
+	int main(){
+		...
+		int ct = 1;
+		while(1){
+			...
+			if(difftime(time(NULL), fileAccessed) <= 30){
+				char newfile[100];
+				sprintf(newfile, "%s/makan_sehat%d.txt", dir, ct);
+				...
+			}
+		}
+	}
+	```
+	dengan memanfaatkan variable `dir` yang pernah dibuat, buat alamat file baru dengan bantuan fungsi `sprintf` dan tambahkan variable `ct` yang akan digunakan untuk penomoran file baru yang akan dibuat.
+	```c
+	...
+	int main(){
+		pid_t = child;
+		int status;
+		...
+		while(1){
+			...
+			if(difftime(time(NULL), fileAccessed) <= 30){
+				...
+				child = fork();
+				if(child == 0){
+					char *argv[3] = {"touch", newfile, NULL};
+					execv("/usr/bin/touch", argv);
+					} while ((wait(&status)) > 0); kill(child, SIGKILL);
+					ct++;
+				}
+			}
+		}
+	}
+	```
+	karena saat menjalankan fungsi `execv` program akan berhenti/keluar dari `while(1)` maka dapat dibuatkan proses baru dengan `fork()` setelah itu jalankan `touch` untuk membuat file baru. Jangan lupa untuk menutup proses dengan men-kill pid yang baru dibuat dengan fungsi `kill`, namun manfaatkan fungsi `wait()` terlebih dahulu untuk memastikan proses selesai dijalankan sebelum ditutup. setelah itu jangan lupa meng-increament `ct`.  
+6. Program utama selesai, buat dan tambahkan fungsi untuk membuat `daemon`.
+	```c
+		...
+		void crDaemon();
+		int main() {
+		...
+		crDaemon();
+
+		while(1) {
+		 ...
+		}
+		exit(EXIT_SUCCESS);
+		}
+
+		void crDaemon(){
+			pid_t pid, sid;
+			pid = fork();
+
+			if (pid < 0) {
+				exit(EXIT_FAILURE);
+			}
+
+			if (pid > 0) {
+				exit(EXIT_SUCCESS);
+			}
+
+			umask(0);
+
+			sid = setsid();
+
+			if (sid < 0) {
+				exit(EXIT_FAILURE);
+			}
+
+			if ((chdir("/")) < 0) {
+				exit(EXIT_FAILURE);
+			}
+
+			close(STDIN_FILENO);
+			close(STDOUT_FILENO);
+			close(STDERR_FILENO);
+		}
+	```
 ## 5. soal5
 Kerjakan poin a dan b di bawah:  
 a. Buatlah program c untuk mencatat log setiap menit dari file `log` pada `syslog` ke `/home/[user]/log/[dd:MM:yyyy-hh:mm]/log#.log`  
