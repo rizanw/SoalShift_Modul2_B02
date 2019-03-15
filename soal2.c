@@ -18,22 +18,17 @@ int main() {
   char elenku[100];
   char *uname;
   uname = getlogin();
-  sprintf(elenku, "/home/%s/modul2/hatiku/elen.ku", uname);
+  sprintf(elenku, "/home/%s/hatiku/elen.ku", uname);
 
- crDaemon();
+  crDaemon();
 
   while(1) {
-    char own[10] = "www-data";
-    printf("start\n");
-    printf("%s\n", elenku);
-
     struct stat kenangan;
   	stat(elenku, &kenangan);
   	struct passwd *euid = getpwuid(kenangan.st_uid);
   	struct group *egid = getgrgid(kenangan.st_gid);
 
-    printf("%s - %s\n", euid->pw_name, egid->gr_name);
-  	if(strcmp(euid->pw_name, own)==0 && strcmp(egid->gr_name, own)==0){
+  	if(strcmp(euid->pw_name, "www-data")==0 && strcmp(egid->gr_name, "www-data")==0){
   		remove(elenku);
   	}
   	sleep(3);

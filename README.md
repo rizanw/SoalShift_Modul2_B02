@@ -13,10 +13,19 @@ Elen mempunyai pekerjaan pada studio sebagai fotografer. Suatu hari ada seorang 
 
 ## 2. soal2
 Pada suatu hari Kusuma dicampakkan oleh Elen karena Elen dimenangkan oleh orang lain. Semua kenangan tentang Elen berada pada file bernama “elen.ku” pada direktori “hatiku”. Karena sedih berkepanjangan, tugas kalian sebagai teman Kusuma adalah membantunya untuk menghapus semua kenangan tentang Elen dengan membuat program C yang bisa mendeteksi owner dan group dan menghapus file “elen.ku” setiap 3 detik dengan syarat ketika owner dan grupnya menjadi “www-data”. Ternyata kamu memiliki kendala karena permission pada file “elen.ku”. Jadi, ubahlah permissionnya menjadi 777. Setelah kenangan tentang Elen terhapus, maka Kusuma bisa move on.
-#### Catatan: Tidak boleh menggunakan crontab
+##### Catatan: Tidak boleh menggunakan crontab
+### Jawaban:
+> Check : [Full SourceCode](../soal2.c)
+### Penjelasan :
+1. karena file yang dimaksud tidak terdapat pada paket `Soal Shift Modul 2`, maka buat file yang dimaksud, dengan cara :
+```sh
+$ mkdir ~/hatiku
+$ touch ~/hatiku/elen.ku
+```
+2. ss
 
 ## 3. soal3
-Diberikan file campur2.zip. Di dalam file tersebut terdapat folder “campur2”. 
+Diberikan file campur2.zip. Di dalam file tersebut terdapat folder “campur2”.
 Buatlah program C yang dapat:  
 	i)  mengekstrak file zip tersebut.  
 	ii) menyimpan daftar file dari folder “campur2” yang memiliki ekstensi .txt ke dalam file daftar.txt.
@@ -32,10 +41,10 @@ Dalam direktori `/home/[user]/Documents/makanan` terdapat file `makan_enak.txt` 
 Jika file itu pernah dibuka, program Anda akan membuat 1 file `makan_sehat#.txt` di direktori `/home/[user]/Documents/makanan` dengan `'#'` berisi bilangan bulat dari 1 sampai tak hingga untuk mengingatkan Elen agar berdiet.
 #### Contoh:
 File `makan_enak.txt` terakhir dibuka pada detik ke-1  
-Pada detik ke-10 terdapat file `makan_sehat1.txt` dan `makan_sehat2.txt` 
-#### Catatan: 
+Pada detik ke-10 terdapat file `makan_sehat1.txt` dan `makan_sehat2.txt`
+#### Catatan:
 dilarang menggunakan crontab  
-Contoh nama file : makan_sehat1.txt, makan_sehat2.txt, dst 
+Contoh nama file : makan_sehat1.txt, makan_sehat2.txt, dst
 
 ## 5. soal5
 Kerjakan poin a dan b di bawah:  
