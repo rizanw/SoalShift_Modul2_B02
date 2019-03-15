@@ -11,10 +11,10 @@
 #include <time.h>
 #include <signal.h>
 
-void makedir();
-void mvnfile();
+void crDaemon();
 
 int main() {
+  pid_t child;
   int status;
   int minute = 0;
   char dtime[20];
@@ -22,38 +22,8 @@ int main() {
   char *uname;
   uname = getlogin();
   sprintf(dir, "/home/%s/log", uname);
-  // strcpy(dir, "/home/");
-  // strcat(dir, uname);
-  // strcat(dir, "/log/");
 
-  pid_t pid, sid, child;
-
-  pid = fork();
-
-  if (pid < 0) {
-    exit(EXIT_FAILURE);
-  }
-
-  if (pid > 0) {
-    printf("berhasil\n");
-    exit(EXIT_SUCCESS);
-  }
-
-  umask(0);
-
-  sid = setsid();
-
-  if (sid < 0) {
-    exit(EXIT_FAILURE);
-  }
-
-  if ((chdir("/")) < 0) {
-    exit(EXIT_FAILURE);
-  }
-
-  close(STDIN_FILENO);
-  close(STDOUT_FILENO);
-  close(STDERR_FILENO);
+  crDaemon();
 
   while(1) {
     if(minute%30 == 0){
@@ -90,24 +60,32 @@ int main() {
   exit(EXIT_SUCCESS);
 }
 
-void makedir(char dir[]) {
-    char *argv[4] = {"mkdir", "-p", dir, NULL};
-    execv("/bin/mkdir", argv);
+void crDaemon(){
+    pid_t pid, sid;
 
-    // char cmd[200];
-    // strcpy(cmd, "mkdir -p ");
-    // strcat(cmd, dir);
-    // system(cmd);
-}
+    pid = fork();
 
-void mvnfile(char dir[], int i) {
-  char logdir[] = "/var/log/syslog";
-  char str[5];
-  strcat(dir, "/log");
-  sprintf(str, "%d", i);
-  strcat(dir, str);
-  strcat(dir, ".log");
+    if (pid < 0) {
+      exit(EXIT_FAILURE);
+    }
 
-  char *argv[4] = {"cp", logdir, dir, NULL};
-  execv("/bin/cp", argv);
+    if (pid > 0) {
+      exit(EXIT_SUCCESS);
+    }
+
+    umask(0);
+
+    sid = setsid();
+
+    if (sid < 0) {
+      exit(EXIT_FAILURE);
+    }
+
+    if ((chdir("/")) < 0) {
+      exit(EXIT_FAILURE);
+    }
+
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 }

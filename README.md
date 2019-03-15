@@ -280,47 +280,50 @@ Contoh nama file : makan_sehat1.txt, makan_sehat2.txt, dst
 	karena saat menjalankan fungsi `execv` program akan berhenti/keluar dari `while(1)` maka dapat dibuatkan proses baru dengan `fork()` setelah itu jalankan `touch` untuk membuat file baru. Jangan lupa untuk menutup proses dengan men-kill pid yang baru dibuat dengan fungsi `kill`, namun manfaatkan fungsi `wait()` terlebih dahulu untuk memastikan proses selesai dijalankan sebelum ditutup. setelah itu jangan lupa meng-increament `ct`.  
 6. Program utama selesai, buat dan tambahkan fungsi untuk membuat `daemon`.
 	```c
-		...
-		void crDaemon();
-		int main() {
+	...
+	void crDaemon();
+
+	int main() {
 		...
 		crDaemon();
 
 		while(1) {
 		 ...
 		}
+
 		exit(EXIT_SUCCESS);
+	}
+
+	void crDaemon(){
+		pid_t pid, sid;
+		pid = fork();
+
+		if (pid < 0) {
+			exit(EXIT_FAILURE);
 		}
 
-		void crDaemon(){
-			pid_t pid, sid;
-			pid = fork();
-
-			if (pid < 0) {
-				exit(EXIT_FAILURE);
-			}
-
-			if (pid > 0) {
-				exit(EXIT_SUCCESS);
-			}
-
-			umask(0);
-
-			sid = setsid();
-
-			if (sid < 0) {
-				exit(EXIT_FAILURE);
-			}
-
-			if ((chdir("/")) < 0) {
-				exit(EXIT_FAILURE);
-			}
-
-			close(STDIN_FILENO);
-			close(STDOUT_FILENO);
-			close(STDERR_FILENO);
+		if (pid > 0) {
+			exit(EXIT_SUCCESS);
 		}
-	```
+
+		umask(0);
+
+		sid = setsid();
+
+		if (sid < 0) {
+			exit(EXIT_FAILURE);
+		}
+
+		if ((chdir("/")) < 0) {
+			exit(EXIT_FAILURE);
+		}
+
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+	}
+	```  
+
 ## 5. soal5
 Kerjakan poin a dan b di bawah:  
 a. Buatlah program c untuk mencatat log setiap menit dari file `log` pada `syslog` ke `/home/[user]/log/[dd:MM:yyyy-hh:mm]/log#.log`  
@@ -328,4 +331,170 @@ a. Buatlah program c untuk mencatat log setiap menit dari file `log` pada `syslo
 	- Per 30 menit membuat folder `/[dd:MM:yyyy-hh:mm]`  
 	- Per menit memasukkan log#.log ke dalam folder tersebut `‘#’` : increment per menit. Mulai dari 1  
 b. Buatlah program c untuk menghentikan program di atas.  
-NB: Dilarang menggunakan crontab dan tidak memakai argumen ketika menjalankan program.  
+NB: Dilarang menggunakan crontab dan tidak memakai argumen ketika menjalankan program.
+#### Jawaban :
+> Check : [Full SourceCode](../master/soal5a.c)
+> Check : [Full SourceCode](../master/soal5b.c)
+#### Penjelasan :
+##### a. Soal5a
+1. Inisiasi direktori `log`, manfaatkan fungsi `getlogin()` untuk mendapatkan username user secara dinamik.
+	```c
+	...
+	int main(){
+		char dir[100];
+		char *uname;
+		uname = getlogin();
+		sprintf(dir, "/home/%s/log", uname);
+		...
+
+	}
+	```
+2. Mulai buat program utama, karena program akan melakukan `looping` dengan jeda waktu permenit, maka :
+	```c
+	...
+	int main(){
+		...
+		while(1){
+			...
+			sleep(60);
+		}
+
+	}
+	```
+	dan untuk membuat folder berdasarkan tanggal dan waktu dengan format `[dd:MM:yyyy-hh:mm]`, dapat dengan memanfaatkan [library](http://pubs.opengroup.org/onlinepubs/7908799/xsh/time.h.html) `time.h` untuk mengambil waktu saat ini, namun dengan syarat jika pada menit pertama, ketiga puluh dan keliapatannya dan lalu disimpan kedalam variable `dtime`.
+	```c
+	...
+	int main(){
+		int minute = 0;
+		char dtime[20];
+		...
+		while(1){
+			if(minute%30 == 0){
+				time_t now = time(NULL);
+				struct tm *t = localtime(&now);
+				strftime(dtime, sizeof(dtime)-1, "%Y:%m:%d-%H:%M", t);
+			}
+			...
+		}
+	}
+	```
+3. Buat direktori berdasarkan waktu dengan cara di atas menggunakan `execv`.
+	```c
+	...
+	int main(){
+		pid_t child;
+		int status;
+		...
+		while(1){
+			...
+			child = fork();
+			if(child == 0){
+				char path[200];
+				sprintf(path, "%s/%s", dir, dtime);
+				char *arg[4] = {"mkdir", "-p" ,path, NULL};
+				execv("/bin/mkdir", arg);
+			}
+			while ((wait(&status)) > 0);
+			kill(child, SIGKILL);
+		}
+
+	}
+	```
+	Karena menggunakan `execv` maka diperlukan untuk membuat proses baru agar program tidak keluar dari `while(1)` dan atau `terminate`. setelah itu tunggu hingga proses selesai, lalu `kill()`.
+4. Lakukan increment pada variable `minute` sebagai penanda sudah berapa menit program dijalankan.
+	...
+	int main(){
+		int minute = 0;
+		char dtime[20];
+		...
+		while(1){
+			...
+			minute+=1;
+			...
+		}
+	}
+	```
+5. Lakukan backup `syslog` menggunakan program `cp` dengan `execv`.
+	```c
+	...
+	int main(){
+		...
+		while(1){
+			...
+			child = fork();
+			if(child == 0){
+				char sr[] = "/var/log/syslog";
+				char tg[200];
+				sprintf(tg, "%s/%s/log%d.log", dir, dtime, minute);
+				char *argv[4] = {"cp", sr, tg, NULL};
+				execv("/bin/cp", argv);
+			}
+			while ((wait(&status)) > 0);
+			kill(child, SIGKILL);
+			...
+		}
+
+	}
+	```
+	Gunakan `fork()` sekali lagi untuk menjalankan `execv` dan boleh menggunakan variable yang sama spt `mkdir` karena sebelumnya sudah di`kill()`.  
+6. Karena program berjalan seperti menggunakan `crontab` maka program akan dijalankan dalam `background` menggunakan `daemon process`.
+	```c
+	...
+	void crDaemon();
+
+	int main() {
+		...
+		crDaemon();
+
+		while(1) {
+		 ...
+		}
+
+		exit(EXIT_SUCCESS);
+	}
+
+	void crDaemon(){
+		pid_t pid, sid;
+		pid = fork();
+
+		if (pid < 0) {
+			exit(EXIT_FAILURE);
+		}
+
+		if (pid > 0) {
+			exit(EXIT_SUCCESS);
+		}
+
+		umask(0);
+
+		sid = setsid();
+
+		if (sid < 0) {
+			exit(EXIT_FAILURE);
+		}
+
+		if ((chdir("/")) < 0) {
+			exit(EXIT_FAILURE);
+		}
+
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+	}
+	```  
+
+
+
+##### b. soal5b
+1. Buat program menggunakan `execv` untuk menjalankan program `killall` dan jangan lupa memasukkan nama program yang sesuai dengan no 5.a
+```c
+...
+int main() {
+	char namap[10] = {"soal5a"};
+
+	char *argv[3] = {"killall", namap, NULL};
+	execv("/usr/bin/killall", argv);
+
+	return 0;
+}
+```
