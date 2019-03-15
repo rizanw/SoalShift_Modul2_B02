@@ -176,6 +176,12 @@ Buatlah program C yang dapat:
 - Gunakan minimal 3 proses yang diakhiri dengan exec.
 - Gunakan pipe
 - Pastikan file daftar.txt dapat diakses dari text editor
+#### Jawaban:
+#### Penjelasan:
+1. Mendeklarasikan Pipe dengan cara :
+2. Pipe pertama diisi dengan proses untuk me-unzip file `Campur2` dengan menggunakan command `unzip`
+3. Dengan menggunakan bantuan `dir` me-list file mana saja yang mempunyai format .txt
+4. Pipe kedua digunakan untuk membuat file baru bernama `daftar.txt` dengan bantuan `touch`
 
 ## 4. soal4
 Dalam direktori `/home/[user]/Documents/makanan` terdapat file `makan_enak.txt` yang berisikan daftar makanan terkenal di Surabaya. Elen sedang melakukan diet dan seringkali tergiur untuk membaca isi `makan_enak.txt` karena ngidam makanan enak. Sebagai teman yang baik, Anda membantu Elen dengan membuat program C yang berjalan setiap 5 detik untuk memeriksa apakah file `makan_enak.txt` pernah dibuka setidaknya 30 detik yang lalu `(rentang 0 - 30 detik)`.
